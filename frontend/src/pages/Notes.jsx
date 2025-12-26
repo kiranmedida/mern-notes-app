@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
@@ -11,58 +11,80 @@ function Notes() {
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!token) navigate("/");
-    fetchNotes();
-  }, []);
+  // ✅ fetchNotes wrapped with useCallback (fixes ESLint dependency issue)
+  const fetchNotes = useCallback(async () => {
+    try {
+      const res = await axios.get(
+        "https://mern-notes-app-6t9w.onrender.com/api/notes",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setNotes(res.data);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to fetch notes");
+    }
+  }, [token]);
 
-  const fetchNotes = async () => {
-    const res = await axios.get(
-      "https://mern-notes-app-6t9w.onrender.com/api/notes",
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
-    setNotes(res.data);
-  };
+  // ✅ Correct useEffect dependencies
+  useEffect(() => {
+    if (!token) {
+      navigate("/");
+      return;
+    }
+    fetchNotes();
+  }, [fetchNotes, navigate, token]);
 
   const saveNote = async () => {
     if (!title || !content) return alert("Fill all fields");
 
-    if (editId) {
-      const res = await axios.put(
-        `https://mern-notes-app-6t9w.onrender.com/api/notes/${editId}`,
-        { title, content },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setNotes(notes.map(n => n._id === editId ? res.data : n));
-    } else {
-      const res = await axios.post(
-        "https://mern-notes-app-6t9w.onrender.com/api/notes",
-        { title, content },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setNotes([res.data, ...notes]);
-    }
+    try {
+      if (editId) {
+        const res = await axios.put(
+          `https://mern-notes-app-6t9w.onrender.com/api/notes/${editId}`,
+          { title, content },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setNotes(notes.map(n => (n._id === editId ? res.data : n)));
+      } else {
+        const res = await axios.post(
+          "https://mern-notes-app-6t9w.onrender.com/api/notes",
+          { title, content },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setNotes([res.data, ...notes]);
+      }
 
-    setTitle("");
-    setContent("");
-    setEditId(null);
+      setTitle("");
+      setContent("");
+      setEditId(null);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to save note");
+    }
   };
 
   const deleteNote = async (id) => {
-    await axios.delete(
-      `https://mern-notes-app-6t9w.onrender.com/api/notes/${id}`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-    setNotes(notes.filter(n => n._id !== id));
+    try {
+      await axios.delete(
+        `https://mern-notes-app-6t9w.onrender.com/api/notes/${id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setNotes(notes.filter(n => n._id !== id));
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete note");
+    }
   };
 
-const editNote = (note) => {
-  setEditId(note._id);
-  setTitle(note.title);
-  setContent(note.content);
-};
+  // ✅ editNote defined (fixes previous build failure)
+  const editNote = (note) => {
+    setEditId(note._id);
+    setTitle(note.title);
+    setContent(note.content);
+  };
+
   return (
     <div className="notes-container">
       <header>
@@ -111,7 +133,7 @@ const editNote = (note) => {
       </div>
 
       <div className="notes-grid">
-        {notes.map(note => (
+        {notes.map((note) => (
           <div className="note-card" key={note._id}>
             <h4>{note.title}</h4>
             <p>{note.content}</p>
