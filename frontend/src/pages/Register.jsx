@@ -13,7 +13,7 @@ function Register() {
 
     try {
       await axios.post(
-        "http://localhost:5000/api/auth/register",
+        "https://mern-notes-app-6t9w.onrender.com/api/auth/register",
         { name, email, password }
       );
       alert("Registration successful");
@@ -30,8 +30,11 @@ function Register() {
 
       <input placeholder="Name" onChange={(e) => setName(e.target.value)} />
       <input placeholder="Email" onChange={(e) => setEmail(e.target.value)} />
-      <input type="password" placeholder="Password"
-        onChange={(e) => setPassword(e.target.value)} />
+      <input
+        type="password"
+        placeholder="Password"
+        onChange={(e) => setPassword(e.target.value)}
+      />
 
       <button className="primary-btn" onClick={register}>Register</button>
 

@@ -17,9 +17,12 @@ function Notes() {
   }, []);
 
   const fetchNotes = async () => {
-    const res = await axios.get("http://localhost:5000/api/notes", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const res = await axios.get(
+      "https://mern-notes-app-6t9w.onrender.com/api/notes",
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
     setNotes(res.data);
   };
 
@@ -28,14 +31,14 @@ function Notes() {
 
     if (editId) {
       const res = await axios.put(
-        `http://localhost:5000/api/notes/${editId}`,
+        `https://mern-notes-app-6t9w.onrender.com/api/notes/${editId}`,
         { title, content },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setNotes(notes.map(n => n._id === editId ? res.data : n));
     } else {
       const res = await axios.post(
-        "http://localhost:5000/api/notes",
+        "https://mern-notes-app-6t9w.onrender.com/api/notes",
         { title, content },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -47,15 +50,9 @@ function Notes() {
     setEditId(null);
   };
 
-  const editNote = (note) => {
-    setEditId(note._id);
-    setTitle(note.title);
-    setContent(note.content);
-  };
-
   const deleteNote = async (id) => {
     await axios.delete(
-      `http://localhost:5000/api/notes/${id}`,
+      `https://mern-notes-app-6t9w.onrender.com/api/notes/${id}`,
       { headers: { Authorization: `Bearer ${token}` } }
     );
     setNotes(notes.filter(n => n._id !== id));
@@ -64,41 +61,45 @@ function Notes() {
   return (
     <div className="notes-container">
       <header>
-  <h2>My Notes 📝</h2>
+        <h2>My Notes 📝</h2>
 
-  <div style={{ display: "flex", gap: "10px" }}>
-    <button
-      className="dark-toggle"
-      onClick={() => {
-        document.body.classList.toggle("dark");
-        localStorage.setItem(
-          "theme",
-          document.body.classList.contains("dark") ? "dark" : "light"
-        );
-      }}
-    >
-      🌙 / ☀️
-    </button>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <button
+            className="dark-toggle"
+            onClick={() => {
+              document.body.classList.toggle("dark");
+              localStorage.setItem(
+                "theme",
+                document.body.classList.contains("dark") ? "dark" : "light"
+              );
+            }}
+          >
+            🌙 / ☀️
+          </button>
 
-    <button
-      className="logout"
-      onClick={() => {
-        localStorage.clear();
-        navigate("/");
-      }}
-    >
-      Logout
-    </button>
-  </div>
-</header>
-
+          <button
+            className="logout"
+            onClick={() => {
+              localStorage.clear();
+              navigate("/");
+            }}
+          >
+            Logout
+          </button>
+        </div>
+      </header>
 
       <div className="note-form">
-        <input placeholder="Title" value={title}
-          onChange={(e) => setTitle(e.target.value)} />
-        <textarea placeholder="Write your note..."
+        <input
+          placeholder="Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+        <textarea
+          placeholder="Write your note..."
           value={content}
-          onChange={(e) => setContent(e.target.value)} />
+          onChange={(e) => setContent(e.target.value)}
+        />
         <button className="primary-btn" onClick={saveNote}>
           {editId ? "Update" : "Add"}
         </button>
