@@ -58,6 +58,11 @@ function Notes() {
     setNotes(notes.filter(n => n._id !== id));
   };
 
+const editNote = (note) => {
+  setEditId(note._id);
+  setTitle(note.title);
+  setContent(note.content);
+};
   return (
     <div className="notes-container">
       <header>
